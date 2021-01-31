@@ -53,15 +53,36 @@ class Recorder {
 
   async stopRecording() {
     if (!this.recordingActive) return;
-
     if (this.mediaRecorder.state === 'inactive') return;
 
-    console.log('media recorder stopped!', this.userName);
+    console.log('`media recorded stopped!', this.userName);
     this.mediaRecorder.stop();
 
     this.recordingActive = false;
     await Util.sleep(200);
     this.completeRecordings.push([...this.recordedBlobs]);
     this.recordedBlobs = [];
+  }
+
+  getAllVideosURLs() {
+    return this.completeRecordings.map((recording) => {
+      const superBuffer = new Blob(recording, { type: this.videoType });
+      return window.URL.createObjectURL(superBuffer);
+    });
+  }
+
+  download() {
+    if (!this.completeRecordings.length) return;
+
+    for (const recording of this.completeRecordings) {
+      const blob = new Blob(recording, { type: this.videoType });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `${this.filename}.webm`;
+      document.body.appendChild(a);
+      a.click();
+    }
   }
 }
